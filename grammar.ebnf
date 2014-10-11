@@ -1,0 +1,251 @@
+(* Using the Extended BNF as defined by ISO/IEC 14977:1996(E). *)
+
+(* Begin custom rules defined to reduce redundancy. *)
+
+constant_declaration_fragment =
+	ident ,
+	'=' ,
+	number ;
+
+variable_declaration_fragment =
+	ident ,
+	':' ,
+	ident ;
+
+compound_statement_sequence =
+	statement ,
+	{ ';' , statement } ;
+
+digit =
+	'0' | '1' | '2' | '3' | '4' |
+	'5' | '6' | '7' | '8' | '9' ;
+
+alpha =
+	'a' | 'b' | 'c' | 'd' | 'e' | 'f' | 'g' | 'h' |
+	'i' | 'j' | 'k' | 'l' | 'm' | 'n' | 'o' | 'p' |
+	'q' | 'r' | 's' | 't' | 'u' | 'v' | 'w' | 'x' |
+	'y' | 'z' ;
+
+(* End custom rules. *)
+
+basic_program =
+	declaration_unit |
+	implementation_unit ;
+
+declaration_unit =
+	'DECLARATION' ,
+	'OF' ,
+	ident ,
+	[ 'CONST' , constant_declaration ] ,
+	[ 'VAR' , variable_declaration ] ,
+	[ type_declaration ] ,
+	[ procedure_interface ] ,
+	[ function_interface ] ,
+	'DECLARATION' ,
+	'END' ;
+
+procedure_interface =
+	'PROCEDURE' ,
+	ident ,
+	[ formal_parameters ] ;
+
+function_interface =
+	'FUNCTION' ,
+	ident ,
+	[ formal_parameters ] ;
+
+type_declaration =
+	'TYPE' ,
+	ident ,
+	':' ,
+	type ,
+	';' ;
+
+formal_parameters =
+	'(' ,
+	ident ,
+	{ ';' , ident } ,
+	')' ;
+
+constant_declaration =
+	constant_declaration_fragment ,
+	{ ',' , constant_declaration_fragment } ,
+	';' ;
+
+variable_declaration =
+	variable_declaration_fragment ,
+	{ ',' , variable_declaration_fragment } ,
+	';' ;
+
+type =
+	basic_type |
+	array_type ;
+
+basic_type =
+	ident |
+	enumerated_type |
+	range_type ;
+
+enumerated_type =
+	'{' ,
+	ident ,
+	{ ',' , ident } ,
+	'}' ;
+
+range_type =
+	'[' ,
+	range ,
+	']' ;
+
+array_type =
+	'ARRAY' ,
+	ident ,
+	'[' ,
+	range ,
+	']' ,
+	'OF' ,
+	type ;
+
+range =
+	number ,
+	'..' ,
+	number ;
+
+implementation_unit =
+	'IMPLEMENTATION' ,
+	'OF' ,
+	ident ,
+	block ,
+	'.' ;
+
+block =
+	specification_part ,
+	implementation_part ;
+
+specification_part =
+	[
+		( 'CONST' , constant_declaration ) |
+		( 'VAR' , variable_declaration ) |
+		procedure_declaration |
+		function_declaration
+	] ;
+
+procedure_declaration =
+	'PROCEDURE' ,
+	ident ,
+	';' ,
+	block ,
+	';' ;
+
+function_declaration =
+	'FUNCTION' ,
+	ident ,
+	';' ,
+	block ,
+	';' ;
+
+implementation_part =
+	statement ;
+
+statement =
+	assignment |
+	procedure_call |
+	if_statement |
+	while_statement |
+	do_statement |
+	for_statement |
+	compound_statement ;
+
+assignment =
+	ident ,
+	':=' ,
+	expression ;
+
+procedure_call =
+	'CALL' ,
+	ident ;
+
+(*
+	In the following four production rules, for consistency with
+	keywords that use one terminal symbol for each word, the END *
+	terminal symbols have been split into a symbol for END, then a
+	symbol for the type of programming structure.
+
+	Furthermore in the if_statement rule below, I have replaced
+	'statement' with 'compound_statement_sequence' (itself a
+	custom rule representing a semicolon-separated series of
+	statements) for consistency with the language's loops.
+
+	One could argue that it would be better to instead change all
+	of the loops to replace 'compound_statement_sequence' with
+	'statement' as a 'statement' can be a 'compound_statement'
+	anyway, but this may break test programs written strictly in
+	alignment with the provided specification. On the other hand,
+	my chosen modification creates a strict superset of the
+	language defined by the assessment.
+*)
+
+if_statement =
+	'IF' ,
+	expression ,
+	'THEN' ,
+	compound_statement_sequence ,
+	'END' ,
+	'IF' ;
+
+while_statement =
+	'WHILE' ,
+	expression ,
+	'DO' ,
+	compound_statement_sequence ,
+	'END' ,
+	'WHILE' ;
+
+do_statement =
+	'DO' ,
+	compound_statement_sequence ,
+	'WHILE' ,
+	expression ,
+	'END' ,
+	'DO' ;
+
+for_statement =
+	'FOR' ,
+	ident ,
+	':=' ,
+	expression ,
+	'DO' ,
+	compound_statement_sequence ,
+	'END' ,
+	'FOR' ;
+
+compound_statement =
+	'BEGIN' ,
+	compound_statement_sequence ,
+	'END' ;
+
+expression =
+	term ,
+	{
+		( '+' | '-' ) ,
+		term
+	} ;
+
+term =
+	id_num ,
+	{
+		( '*' | '/' ) ,
+		id_num
+	} ;
+
+id_num =
+	ident |
+	number ;
+
+number =
+	digit ,
+	{ digit } ;
+
+ident =
+	alpha ,
+	{ alpha } ;
