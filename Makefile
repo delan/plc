@@ -1,6 +1,6 @@
 CC = clang
 LEX = flex
-CFLAGS = -ansi
+CFLAGS = -std=c99
 LDLIBS = -lfl
 
 lexer: lexer.o
