@@ -1,0 +1,6 @@
+IMPLEMENTATION OF dos
+BEGIN
+i := 10;
+i := i * 2 - 1;
+WHILE i DO i := i - 1 END WHILE
+END.
