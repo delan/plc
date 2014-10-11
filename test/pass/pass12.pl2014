@@ -1,0 +1,3 @@
+DECLARATION OF testtwo
+	CONST myconst = 1;
+DECLARATION END

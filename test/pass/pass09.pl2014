@@ -1,0 +1,3 @@
+DECLARATION OF testseventeen
+	PROCEDURE fibonacci (x)
+DECLARATION END

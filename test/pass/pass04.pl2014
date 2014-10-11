@@ -1,0 +1,3 @@
+DECLARATION OF testtwelve
+	TYPE you : ARRAY see[13..1] OF {blue, red, purple};
+DECLARATION END

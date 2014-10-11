@@ -1,0 +1,3 @@
+DECLARATION OF testfourteen
+	TYPE myarray : ARRAY beep[1..19] OF ARRAY boop[4..16] OF book;
+DECLARATION END

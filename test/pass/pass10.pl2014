@@ -1,0 +1,3 @@
+DECLARATION OF testeighteen
+	PROCEDURE volumeofrecprism (x; y; z)
+DECLARATION END

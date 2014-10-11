@@ -1,0 +1,3 @@
+DECLARATION OF testten
+	TYPE i : ARRAY spy[1..13] OF goal;
+DECLARATION END

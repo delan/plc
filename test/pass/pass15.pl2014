@@ -1,0 +1,3 @@
+DECLARATION OF testthree
+	CONST one = 4, two = 8, three = 15, four = 16, five = 23, six = 42;
+DECLARATION END

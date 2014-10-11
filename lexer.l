@@ -1,12 +1,22 @@
 %{
-	#define TOKE(KIND) printf(#KIND "\n");
-	#define TOKA(KIND) printf(#KIND ":%s\n", yytext);
-	#define DIE(WHY) { \
-		fputs("fatal error: " #WHY "\n", stderr); \
-		exit(1); \
-	}
+
+#include <stdio.h>
+#include "y.tab.h"
+
+#define TOKE(KIND) { \
+        printf("lexer: found PL_" #KIND "\n"); \
+        return PL_ ## KIND; \
+}
+
+#define TOKV(KIND) { \
+        printf("lexer: found PL_" #KIND ": %s\n", yytext); \
+        return PL_ ## KIND; \
+}
+
 %}
+
 %%
+
 ARRAY           TOKE(ARRAY)
 BEGIN           TOKE(BEGIN)
 CALL            TOKE(CALL)
@@ -41,7 +51,12 @@ WHILE           TOKE(WHILE)
 \(              TOKE(LPAREN)
 \)              TOKE(RPAREN)
 \.\.            TOKE(TO)
-[0-9]+          TOKA(NUMBER)
-[a-z]+          TOKA(IDENT)
+[0-9]+          TOKV(NUMBER)
+[a-z]+          TOKV(IDENT)
 [ \t\r\n]+      ;
-.               DIE(unexpected input)
+.               {
+                        fprintf(stderr, "lexer: error: unexpected "
+                                        "input character: '%s' [%d]\n",
+                                        yytext, *yytext);
+                        exit(1);
+                }

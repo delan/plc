@@ -1,0 +1,181 @@
+\documentclass[a4paper,titlepage,12pt]{article}
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[margin=1in]{geometry}
+\usepackage{parskip}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{listings}
+\usepackage{multirow}
+\usepackage[usenames,dvipsnames]{color}
+\hypersetup{
+	colorlinks,
+	pdfauthor=Delan Azabani,
+	pdftitle=Programming Languages 200: parser assignment
+}
+\lstset{basicstyle=\ttfamily, basewidth=0.5em}
+
+\title{Programming Languages 200:\\PL2014 parser assignment}
+\date{October 12, 2014}
+\author{Delan Azabani}
+
+\pagenumbering{gobble}
+\thispdfpagelabel0
+
+\begin{document}
+
+\maketitle
+
+\pagenumbering{arabic}
+
+\section{Overview}
+
+This assignment submission includes a \texttt{Makefile} with the
+following rules:
+
+\begin{itemize}
+	\item\texttt{PL2014\_check} compiles the main syntax checker,
+	\item\texttt{clean} deletes all compiled and generated files,
+	\item\texttt{test} executes a suite of 37 unit tests, and
+	\item\texttt{report.pdf} typesets this report.
+\end{itemize}
+
+The default rule chosen upon invocation of \texttt{make(1)} without a
+recipe is \texttt{PL2014\_check}.
+
+I was fortunate enough to be able to develop the assignment without
+once encountering a shift/reduce, reduce/reduce or any other kind of
+conflict, so I have no idea what such an error from \texttt{yacc(1)}
+looks like. Included with this submission is a \texttt{.git} directory
+containing an uninteresting revision history over the course of my
+work.
+
+\section{The EBNF grammar}
+
+\texttt{grammar.ebnf} contains the entire PL2014 grammar represented in
+the Extended Backus--Naur Form as defined by ISO/IEC 14977:1996(E).
+Each of the 33 production rules in the assignment specification's
+syntax graphs has an equivalent with a matching name in the EBNF, in
+addition to the following extra rules:
+
+\begin{itemize}
+	\item\texttt{constant\_declaration\_fragment} represents one of
+	     the constituent comma separated equalities in a
+	     \texttt{constant\_declaration},
+	\item\texttt{variable\_declaration\_fragment} represents one of
+	     the constituent comma separated declarations in a
+	     \texttt{variable\_declaration},
+	\item\texttt{compound\_statement\_sequence} represents a
+	     semicolon-separated list of at least one statement,
+	     excluding \texttt{BEGIN} and \texttt{END},
+	\item\texttt{digit} represents any Arabic numeral, and
+	\item\texttt{alpha} represents any Latin alphabetic character.
+\end{itemize}
+
+The former three rules are present to minimise redundancy and improve
+clarity, while the remaining two are necessary because the EBNF
+standard doesn't mandate the presence of any character classes.
+
+In the given syntax graphs, I found the idea confusing that
+\texttt{DECLARATION} and \texttt{END} in \texttt{declaration\_unit}
+were separate tokens, but \texttt{END} and \texttt{IF}, \texttt{WHILE},
+\texttt{DO} and \texttt{FOR} were not. I chose to standardise on
+`separate words, separate tokens' to minimise dependence on any fixed
+amount of whitespace between keywords.
+
+It also appeared inconsistent that \texttt{if\_statement} would only
+allow a single \texttt{statement} (even if said statement was a
+\texttt{compound\_statement}) while the loop constructs allowed
+multiple statements separated by semicolons. Because all of PL2014's
+control structures frame statements firmly with keywords, thus keeping
+them safe from ambiguity, I decided to upgrade \texttt{if\_statement}
+to allow multiple statements.
+
+\section{The lexical analyser}
+
+\texttt{lexer.l} defines 17 keyword tokens, 17 symbol tokens, two
+tokens with variety (\texttt{PL\_NUMBER} and \texttt{PL\_IDENT}), plus
+a rule that ignores whitespace, and finally a rule that catches invalid
+characters, terminating the analysis of input.
+
+The \texttt{TOKV} function-like preprocessor macro is used to print out
+the details of each encountered token with variety. \texttt{TOKE} is
+similar, but does not print \texttt{yytext} for fixed symbols.
+
+Assumptions made here include:
+
+\begin{itemize}
+	\item Keywords shall always consist of all capital letters,
+	      thus yielding the convenient property of the keyword
+	      and identifier namespaces failing to overlap, and
+	\item Assignment and range delimitation symbols (\texttt{:=}
+	      and \texttt{..} respectively) shall not contain spaces,
+	      indicating the need for separate, unique tokens for these
+	      symbols.
+\end{itemize}
+
+The order of definition of token rules mattered scarcely because
+\texttt{lex(1)} is guaranteed to adhere to the maximal munch principle.
+However, the fallback rule which was to catch any invalid character
+must come after all other rules matching single characters.
+
+\newpage
+
+\section{The parser}
+
+\texttt{parser.y} defines all 36 internal token identifiers used by
+\texttt{lexer.l}. In addition, each of the 34 non-terminal symbols
+outlined earlier in the EBNF grammar have been methodically translated
+into \texttt{yacc(1)} rules with the same names.
+
+The \texttt{NONT} function-like macro prints a message when a
+non-terminal symbol has been completely parsed. Care was taken to
+ensure that only left recursion was used in the translation from EBNF
+to \texttt{yacc(1)} rules.
+
+The following additional rules were required to represent optional
+sequences:
+
+\begin{itemize}
+	\item\texttt{optional\_const\_and\_constant\_declaration},
+	\item\texttt{optional\_var\_and\_variable\_declaration},
+	\item\texttt{optional\_type\_declaration},
+	\item\texttt{optional\_procedure\_interface},
+	\item\texttt{optional\_function\_interface}, and
+	\item\texttt{optional\_formal\_parameters}.
+\end{itemize}
+
+Optional sequences took the form:
+
+\begin{lstlisting}
+optional_thing :
+               { NONT(optional_thing) }
+               | thing
+               { NONT(optional_thing) }
+\end{lstlisting}
+
+The following additional rules were required to represent repeated,
+delimited sequences of at least one element:
+
+\begin{itemize}
+	\item\texttt{comma\_constant\_declaration\_fragments},
+	\item\texttt{comma\_variable\_declaration\_fragments},
+	\item\texttt{comma\_idents},
+	\item\texttt{semicolon\_idents},
+	\item\texttt{semicolon\_statements},
+	\item\texttt{add\_subtract\_terms}, and
+	\item\texttt{multiply\_divide\_id\_nums}.
+\end{itemize}
+
+Repeated sequences took the form:
+
+\begin{lstlisting}
+delimiter_things : thing
+                 { NONT(optional_thing) }
+                 | delimiter_things
+                   delimiter
+                   thing
+                 { NONT(optional_thing) }
+\end{lstlisting}
+
+\end{document}

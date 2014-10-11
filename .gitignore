@@ -2,3 +2,8 @@
 *.c
 *.o
 *.h
+*.output
+*.aux
+*.log
+*.out
+*.pdf

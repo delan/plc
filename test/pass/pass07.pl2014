@@ -1,0 +1,3 @@
+DECLARATION OF testfifteen
+	TYPE we : ARRAY must[1..2] OF ARRAY go[2..3] OF ARRAY deeper[3..4] OF inception;
+DECLARATION END

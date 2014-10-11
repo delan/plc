@@ -1,0 +1,3 @@
+DECLARATION OF testeight
+	TYPE drink : {coffee, milk, cider, chardonay};
+DECLARATION END

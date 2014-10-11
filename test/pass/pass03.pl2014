@@ -1,0 +1,3 @@
+DECLARATION OF testeleven
+	TYPE you : ARRAY see[13..1] OF {red};
+DECLARATION END

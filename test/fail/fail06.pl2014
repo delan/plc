@@ -1,0 +1,14 @@
+DECLARATION OF ios
+CONST con = 0, fruit = 3;
+VAR y : bats;
+TYPE flyingmice : ARRAY bats [ 0..3 ] OF [ 0..3 ] ;
+PROCEDURE xciting ( none )
+FUNCTION nxist ( blah; blah; blah )
+DECLARATION END
+IMPLEMENTATION OF dos
+PROCEDURE xciting;
+IF x THEN CALL xciting ENDIF;
+BEGIN
+i := 10;
+WHILE i DO i := i - 1 END WHILE
+END.

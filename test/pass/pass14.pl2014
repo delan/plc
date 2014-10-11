@@ -1,0 +1,3 @@
+DECLARATION OF testtwentyone
+	FUNCTION volumeofrecprism (x; y; z)
+DECLARATION END
