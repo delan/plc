@@ -1,0 +1,7 @@
+DECLARATION OF ios
+CONST con = 0, fruit = 3;
+VAR y : bats;
+TYPE flyingmice : ARRAY bats [ 0..3 ] OF [ 0..3 ] ;
+PROCEDURE xciting ( none )
+FUNCTION nxist ( blah; blah; blah )
+DECLARATION END

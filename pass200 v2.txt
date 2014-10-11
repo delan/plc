@@ -1,0 +1,7 @@
+IMPLEMENTATION OF dos
+PROCEDURE xciting;
+IF x THEN CALL xciting END IF;
+BEGIN
+i := 10;
+WHILE i DO i := i - 1 END WHILE
+END.
