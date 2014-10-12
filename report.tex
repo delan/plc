@@ -40,30 +40,54 @@ following rules:
 	\item\texttt{report.pdf} typesets this report.
 \end{itemize}
 
-The default rule chosen upon invocation of \texttt{make(1)} without a
-recipe is \texttt{PL2014\_check}.
+The default \texttt{make(1)} rule is \texttt{PL2014\_check}. To see
+additional runtime debugging output from the parser that
+\texttt{yacc(1)} generates, use \texttt{make YFLAGS=-t} instead.
+Included with this submission is a \texttt{.git} directory containing
+an uninteresting revision history over the course of my work on this
+assignment.
 
-I was fortunate enough to be able to develop the assignment without
-once encountering a shift/reduce, reduce/reduce or any other kind of
-conflict, so I have no idea what such an error from \texttt{yacc(1)}
-looks like. Included with this submission is a \texttt{.git} directory
-containing an uninteresting revision history over the course of my
-work.
+\section{Assumptions and deviations}
+
+I assumed that keywords shall always consist of all capital letters,
+thus yielding the convenient property of the keyword and identifier
+namespaces failing to overlap.
+
+Furthermore, I assumed that assignment and range delimitation symbols
+(\texttt{:=} and \texttt{..} respectively) shall not contain spaces,
+indicating the need for unique tokens for them.
+
+In the given syntax graphs, I found it confusing that while
+\texttt{declaration\_unit} separated \texttt{DECLARATION} and
+\texttt{END} into two tokens, \texttt{END IF}, \texttt{END WHILE},
+\texttt{END DO} and \texttt{END FOR} were together in single
+rounded rectangles. I chose to standardise on `separate words, separate
+tokens' to minimise dependence on any fixed amount of whitespace
+between keywords.
+
+Leaving aside the fact that \texttt{statement} can be a
+\texttt{compound\_statement}, it appeared inconsistent that
+\texttt{if\_statement} would only allow a single \texttt{statement},
+while all of the loop constructs allowed multiple statements separated
+by semicolons. After checking that it would not introduce any
+ambiguity, I upgraded \texttt{if\_statement} in this way.
+
+\newpage
 
 \section{The EBNF grammar}
 
-\texttt{grammar.ebnf} contains the entire PL2014 grammar represented in
-the Extended Backus--Naur Form as defined by ISO/IEC 14977:1996(E).
-Each of the 33 production rules in the assignment specification's
-syntax graphs has an equivalent with a matching name in the EBNF, in
-addition to the following extra rules:
+\texttt{grammar.ebnf} is a conversion of the entire PL2014 grammar from
+syntax graphs to the Extended Backus--Naur Form as defined by ISO/IEC
+14977:1996(E). Each of the original 33 production rules has an
+equivalent with a matching name in the EBNF, in addition to the
+following extra rules:
 
 \begin{itemize}
-	\item\texttt{constant\_declaration\_fragment} represents one of
-	     the constituent comma separated equalities in a
+	\item\texttt{constant\_declaration\_fragment} represents any
+	     one of the constituent comma-separated equalities in a
 	     \texttt{constant\_declaration},
-	\item\texttt{variable\_declaration\_fragment} represents one of
-	     the constituent comma separated declarations in a
+	\item\texttt{variable\_declaration\_fragment} represents any
+	     one of the constituent comma-separated declarations in a
 	     \texttt{variable\_declaration},
 	\item\texttt{compound\_statement\_sequence} represents a
 	     semicolon-separated list of at least one statement,
@@ -74,22 +98,8 @@ addition to the following extra rules:
 
 The former three rules are present to minimise redundancy and improve
 clarity, while the remaining two are necessary because the EBNF
-standard doesn't mandate the presence of any character classes.
-
-In the given syntax graphs, I found the idea confusing that
-\texttt{DECLARATION} and \texttt{END} in \texttt{declaration\_unit}
-were separate tokens, but \texttt{END} and \texttt{IF}, \texttt{WHILE},
-\texttt{DO} and \texttt{FOR} were not. I chose to standardise on
-`separate words, separate tokens' to minimise dependence on any fixed
-amount of whitespace between keywords.
-
-It also appeared inconsistent that \texttt{if\_statement} would only
-allow a single \texttt{statement} (even if said statement was a
-\texttt{compound\_statement}) while the loop constructs allowed
-multiple statements separated by semicolons. Because all of PL2014's
-control structures frame statements firmly with keywords, thus keeping
-them safe from ambiguity, I decided to upgrade \texttt{if\_statement}
-to allow multiple statements.
+standard doesn't mandate the presence of any character classes, akin
+to those one might find in a standard for regular expressions.
 
 \section{The lexical analyser}
 
@@ -101,18 +111,6 @@ characters, terminating the analysis of input.
 The \texttt{TOKV} function-like preprocessor macro is used to print out
 the details of each encountered token with variety. \texttt{TOKE} is
 similar, but does not print \texttt{yytext} for fixed symbols.
-
-Assumptions made here include:
-
-\begin{itemize}
-	\item Keywords shall always consist of all capital letters,
-	      thus yielding the convenient property of the keyword
-	      and identifier namespaces failing to overlap, and
-	\item Assignment and range delimitation symbols (\texttt{:=}
-	      and \texttt{..} respectively) shall not contain spaces,
-	      indicating the need for separate, unique tokens for these
-	      symbols.
-\end{itemize}
 
 The order of definition of token rules mattered scarcely because
 \texttt{lex(1)} is guaranteed to adhere to the maximal munch principle.
@@ -131,7 +129,8 @@ into \texttt{yacc(1)} rules with the same names.
 The \texttt{NONT} function-like macro prints a message when a
 non-terminal symbol has been completely parsed. Care was taken to
 ensure that only left recursion was used in the translation from EBNF
-to \texttt{yacc(1)} rules.
+to \texttt{yacc(1)} rules, as that is optimal for a LALR parser
+generator.
 
 The following additional rules were required to represent optional
 sequences:
@@ -154,8 +153,8 @@ optional_thing :
                { NONT(optional_thing) }
 \end{lstlisting}
 
-The following additional rules were required to represent repeated,
-delimited sequences of at least one element:
+The following additional rules were required to represent repeating,
+symbol-delimited sequences of at least one element:
 
 \begin{itemize}
 	\item\texttt{comma\_constant\_declaration\_fragments},
